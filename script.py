@@ -1,10 +1,13 @@
-def add(a, b):
+def sum(a, b):
     return a + b
 
-
-def division(a, b):
+def devide(a, b):
     if b == 0:
-        raise ValueError("Zero division is not allowed")
+        raise ValueError("Denominator could not be zero")
     if isinstance(a, str) or isinstance(b, str):
-        raise ValueError("String division is not allowed")
+        raise ValueError("Could not devide strings")
+    if isinstance(a, list) or isinstance(b, list):
+        raise ValueError("Could not devide lists") 
+
     return a / b
+
