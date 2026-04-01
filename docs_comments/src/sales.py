@@ -1,73 +1,92 @@
 # TODO refactor this module using buisness logic names
 
+def _parse_record(line: str):
+    """Parse data from one sale record
 
-def _row(x):
-    # x is one line from file
-    p = x.strip().split(",")  # split by comma
-    if len(p) != 4:  # if line is bad
-        return None  # return nothing
+    Parameters:
+        line : record on one sale that come from file
 
-    n = p[0]  # product name
-    c = p[1]  # product category
-    a = float(p[2])  # price of one item
-    q = int(p[3])  # amount of items
-
-    return {"n": n, "c": c, "a": a, "q": q}  # make dict
+    Return:
+        Data on one sale in from dict or None if validation fails.
+    
+    """
 
 
-def read_data(path):
-    res = []  # final list
-    with open(path, "r", encoding="utf-8") as f:  # open file
-        for x in f:  # go over lines
-            r = _row(x)  # convert line to dict
-            if r is not None:  # if parsing was ok
-                res.append(r)  # add to result
-    return res  # return result
 
 
-def total(ds, d=0):
-    s = 0  # total sum
-    for i in ds:  # loop all rows
-        s = s + i["a"] * i["q"]  # add price * quantity
-    if d:  # if discount exists
-        s = s - s * d / 100  # apply discount
-    return s  # give answer
+    fields = line.strip().split(",")
+    if len(fields) != 4:
+        return None
+
+    product, category, unit_price, quantity = fields
+
+    try:
+        unit_price = float(unit_price)
+    except ValueError:
+        return None
+
+    try:
+        quantity = int(quantity)
+    except ValueError:
+        return None
+
+    return {
+        "product": product,
+        "category": category,
+        "unit_price": unit_price,
+        "quantity": quantity
+    }
 
 
-def find_big(ds, t):
-    out = []  # rows that are big enough
-    for i in ds:  # each row
-        x = i["a"] * i["q"]  # row money
-        if x >= t:  # compare with threshold
-            out.append(i)  # save row
-    return out  # done
+def read_sales_data(path):
+    records = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            record = _parse_record(line)
+            if record is not None:
+                records.append(record)
+    return records
 
 
-def by_category(ds):
-    m = {}  # category to money
-    for i in ds:  # each row
-        k = i["c"]  # category name
-        if k not in m:  # create if needed
-            m[k] = 0  # start from zero
-        m[k] += i["a"] * i["q"]  # add row amount
-    return m  # return mapping
+def calculate_total(records, discount=0):
+    total = 0
+    for record in records:
+        total = total + record["unit_price"] * record["quantity"]
+    if discount:
+        total = total - total * discount / 100
+    return total
 
 
-def report(ds):
-    lines = []  # text lines
-    lines.append("Report")  # title
-    lines.append("------")  # separator
-
-    for k, v in by_category(ds).items():  # category and amount
-        lines.append(f"{k}: {v}")  # make line
-
-    lines.append("------")  # separator again
-    lines.append(f"Total: {total(ds)}")  # total sum
-
-    return "\n".join(lines)  # merge lines
+def find_above_threshold(records, threshold):
+    result = []
+    for record in records:
+        amount = record["unit_price"] * record["quantity"]
+        if amount >= threshold:
+            result.append(record)
+    return result
 
 
-def write_report(path, txt):
-    # TODO better errors
-    with open(path, "w", encoding="utf-8") as f:  # open file for writing
-        f.write(txt)  # write text
+def group_by_category(records):
+    category_totals = {}
+    for record in records:
+        category = record["category"]
+        if category not in category_totals:
+            category_totals[category] = 0
+        category_totals[category] += record["unit_price"] * record["quantity"]
+    return category_totals
+
+
+def build_report(records):
+    lines = []
+    lines.append("Report")
+    lines.append("------")
+    for category, amount in group_by_category(records).items():
+        lines.append(f"{category}: {amount}")
+    lines.append("------")
+    lines.append(f"Total: {calculate_total(records)}")
+    return "\n".join(lines)
+
+
+def write_report(path, text):
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
