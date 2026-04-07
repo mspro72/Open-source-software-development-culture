@@ -17,6 +17,7 @@ documentation for details.
 
    QUICKSTART
    USAGE
-
+   api/modules
+   api/sales
 .. include:: ../DOMAIN.md
-   :parser: myst_parser.sphinx_
+   :parser: myst_parser.sphinx_     
