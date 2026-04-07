@@ -39,6 +39,15 @@ def _parse_record(line: str):
 
 
 def read_sales_data(path):
+    """Parse data from one sale record
+
+    Parameters:
+        line : record on one sale that come from file
+
+    Return:
+        Data on one sale in from dict or None if validation fails.
+    
+    """
     records = []
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
