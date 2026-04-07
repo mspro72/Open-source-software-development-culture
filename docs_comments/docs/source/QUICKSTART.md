@@ -8,7 +8,7 @@ This page is written in markdown
 pip install -e
 ```
 
-# Running test
+## Running test
 
 ```bash
 python -m pytest
